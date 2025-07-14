@@ -2,11 +2,17 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-# CSV 파일 로드
-df = pd.read_csv("vgsales.csv")
+# 제목
+st.title("🎮 Video Game Sales Dashboard")
+st.write("데이터: vgsales - vgsales.csv")
 
-# 데이터 전처리
-# 퍼블리셔별 글로벌 판매량 합산 후 상위 5개
+# CSV 파일 로드
+df = pd.read_csv("vgsales - vgsales.csv")
+
+# 결측치 제거 (있다면)
+df = df.dropna(subset=["Publisher", "Global_Sales"])
+
+# 퍼블리셔별 글로벌 판매량 합산
 top_publishers = (
     df.groupby("Publisher")["Global_Sales"]
     .sum()
@@ -14,10 +20,6 @@ top_publishers = (
     .head(5)
     .reset_index()
 )
-
-# Streamlit UI
-st.title("Top 5 Game Publishers by Global Sales")
-st.write("데이터: vgsales.csv")
 
 # Plotly 그래프
 fig = px.bar(
