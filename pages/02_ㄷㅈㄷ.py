@@ -2,7 +2,7 @@ import streamlit as st
 import plotly.express as px
 
 # 제목
-st.title("2-7 GOAT 순위")
+st.title("2-7 능력치 순위")
 
 # 데이터
 names = ["홍의찬", "이태완", "박희준", "신지용", "권예욱"]
