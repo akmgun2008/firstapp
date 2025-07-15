@@ -2,31 +2,48 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-# 제목
-st.title("🔋 Electric Vehicle Sales Dashboard")
-st.write("데이터: IEA EV Sales Historical Cars")
+# 앱 제목
+st.title("🔋 Global EV Sales Dashboard")
+st.write("데이터 출처: IEA - EV Sales Historical Cars")
 
-# CSV 파일 로드
-df = pd.read_csv("IEA-EV-dataEV salesHistoricalCars.csv")
+# CSV 로드
+df = pd.read_csv("IEA-EV-dataEV salesHistoricalCars - IEA-EV-dataEV salesHistoricalCars.csv")
 
-# 데이터 구조 확인
-st.write("## Raw Data")
-st.write(df.head())
+# EV sales 데이터만 필터링
+df_sales = df[(df["parameter"] == "EV sales") & (df["unit"] == "Vehicles")]
 
-# 연도별 판매량 합계 계산 (예: Column 이름에 따라 조정)
-# 예: 'Year' 컬럼과 'Value' 컬럼이 있다고 가정
-if 'Year' in df.columns and 'Value' in df.columns:
-    sales_by_year = df.groupby("Year")["Value"].sum().reset_index()
+# 연도별 글로벌 총합
+global_sales = df_sales.groupby("year")["value"].sum().reset_index()
 
-    fig = px.line(
-        sales_by_year,
-        x="Year",
-        y="Value",
-        markers=True,
-        title="📈 Global EV Sales Over Time",
-        labels={"Value": "EV Sales (Units)"},
-    )
+# 지역 선택
+regions = df_sales["region"].unique()
+selected_regions = st.multiselect(
+    "지역을 선택하세요 (비어있으면 전체):",
+    options=regions,
+    default=[],
+)
 
-    st.plotly_chart(fig, use_container_width=True)
+# 선택한 지역 필터
+if selected_regions:
+    filtered_df = df_sales[df_sales["region"].isin(selected_regions)]
+    sales_by_year = filtered_df.groupby("year")["value"].sum().reset_index()
+    title = f"선택한 지역: {', '.join(selected_regions)}"
 else:
-    st.error("CSV 파일에 'Year' 또는 'Value' 컬럼이 없습니다.")
+    sales_by_year = global_sales
+    title = "Global EV Sales (All Regions)"
+
+# Plotly 그래프
+fig = px.line(
+    sales_by_year,
+    x="year",
+    y="value",
+    markers=True,
+    title=title,
+    labels={"year": "Year", "value": "EV Sales (Vehicles)"},
+)
+
+st.plotly_chart(fig, use_container_width=True)
+
+# 원본 데이터 확인
+with st.expander("🔍 원본 데이터 보기"):
+    st.write(df.head())
